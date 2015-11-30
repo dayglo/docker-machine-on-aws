@@ -1,0 +1,1 @@
+docker build -t le-nginx:1.0.0 .
