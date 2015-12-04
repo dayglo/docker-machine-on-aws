@@ -23,4 +23,10 @@ export AWS_DEFAULT_REGION=$AWS_REGION
 export AWS_VPC_ID=your-vpc-id
 ```
 
-Currently you have to edit the domain at the top of the script to choose a domain you already have set up on route53.
+Then, do:-
+
+```
+#./createDockerInstance.sh <newSubdomain> <domain>
+# for instance:
+./createDockerInstance.sh www myRegisteredDomain.com
+```

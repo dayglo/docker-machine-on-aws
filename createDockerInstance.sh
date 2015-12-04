@@ -21,10 +21,12 @@
 
 set -e
 
-domain=opsrobot.co.uk
+subdomain=$1
+domain=$2
 
-dmName=test3
-subdomain=$dmName
+dmName=$subdomain.$domain
+
+
 
 # pain in the arse 'cos subnets dont seem to create instantly - leave this for terraform.
 # vpcDoc=`aws ec2 create-vpc --cidr-block 10.0.0.0/16`
@@ -32,7 +34,15 @@ subdomain=$dmName
 # aws ec2 create-subnet --vpc-id $vpcId --cidr-block 10.0.1.0/24
 
 #--------------------------------------------------------------------------------------------------------
+echo Allocate elastic IP...
+elasticIpDoc=`aws ec2 allocate-address`
+ip=`echo $elasticIpDoc | jq -r '.PublicIp'`
+allocationId=`echo $elasticIpDoc | jq -r '.AllocationId'`
+sleep 3
+
+#--------------------------------------------------------------------------------------------------------
 echo Create docker machine on aws...
+
 docker-machine create  \
   --driver amazonec2 \
   --amazonec2-region "$AWS_REGION" \
@@ -63,13 +73,6 @@ else
   echo port 443 not found in docker-machine security group. Adding...
   aws ec2 authorize-security-group-ingress --group-id $groupId --protocol tcp --port 443 --cidr 0.0.0.0/0
 fi
-
-#--------------------------------------------------------------------------------------------------------
-echo Allocate elastic IP...
-elasticIpDoc=`aws ec2 allocate-address`
-ip=`echo $elasticIpDoc | jq -r '.PublicIp'`
-allocationId=`echo $elasticIpDoc | jq -r '.AllocationId'`
-sleep 3
 
 #--------------------------------------------------------------------------------------------------------
 echo Adding DNS entry...
@@ -116,5 +119,5 @@ dnsEntryId=${dnsEntryIdString:8}
 echo Dns entry Id: $dnsEntryId
 
 #--------------------------------------------------------------------------------------------------------
-echo -e "\033[36m INFO: \e[0m To connect to the newly created docker machine, you need to type: "
-echo eval "$(docker-machine env $dmName)"
+echo -e "To connect to the newly created docker machine, you need to type: "
+echo "eval \"$(docker-machine env $dmName)\""
